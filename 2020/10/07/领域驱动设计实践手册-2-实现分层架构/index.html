@@ -1,0 +1,194 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>领域驱动设计实践手册(2.实现分层架构) | Blue Maple</title><meta name="author" content="Kyle Wong"><meta name="copyright" content="Kyle Wong"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="via:Joshua-领域驱动设计实践手册(2.实现分层架构)(侵删) 承接系列的上一篇，本次我回来分享如何结合 Clean Architecture 与 DDD 实现一个分层架构。 项目的目录结构 上图是项目的第一层目录，分为 application，domain，facade，infrastructure 四个部分。接下来分别介绍这四个层的作用。 Application Layerapplic">
+<meta property="og:type" content="article">
+<meta property="og:title" content="领域驱动设计实践手册(2.实现分层架构)">
+<meta property="og:url" content="https://herowk.github.io/2020/10/07/%E9%A2%86%E5%9F%9F%E9%A9%B1%E5%8A%A8%E8%AE%BE%E8%AE%A1%E5%AE%9E%E8%B7%B5%E6%89%8B%E5%86%8C-2-%E5%AE%9E%E7%8E%B0%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84/index.html">
+<meta property="og:site_name" content="Blue Maple">
+<meta property="og:description" content="via:Joshua-领域驱动设计实践手册(2.实现分层架构)(侵删) 承接系列的上一篇，本次我回来分享如何结合 Clean Architecture 与 DDD 实现一个分层架构。 项目的目录结构 上图是项目的第一层目录，分为 application，domain，facade，infrastructure 四个部分。接下来分别介绍这四个层的作用。 Application Layerapplic">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+<meta property="article:published_time" content="2020-10-07T13:01:18.000Z">
+<meta property="article:modified_time" content="2021-02-15T06:49:51.828Z">
+<meta property="article:author" content="Kyle Wong">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://herowk.github.io/2020/10/07/%E9%A2%86%E5%9F%9F%E9%A9%B1%E5%8A%A8%E8%AE%BE%E8%AE%A1%E5%AE%9E%E8%B7%B5%E6%89%8B%E5%86%8C-2-%E5%AE%9E%E7%8E%B0%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '领域驱动设计实践手册(2.实现分层架构)',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-02-15 14:49:51'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.1.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">10</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">2</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档文章</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Blue Maple</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档文章</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">领域驱动设计实践手册(2.实现分层架构)</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2020-10-07T13:01:18.000Z" title="发表于 2020-10-07 21:01:18">2020-10-07</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-02-15T06:49:51.828Z" title="更新于 2021-02-15 14:49:51">2021-02-15</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/DDD/">DDD</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="领域驱动设计实践手册(2.实现分层架构)"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>via:<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/105648986">Joshua-领域驱动设计实践手册(2.实现分层架构)</a>(侵删)</p>
+<p>承接系列的上一篇，本次我回来分享如何结合 Clean Architecture 与 DDD 实现一个分层架构。</p>
+<h2 id="项目的目录结构"><a href="#项目的目录结构" class="headerlink" title="项目的目录结构"></a>项目的目录结构</h2><p><img src="https://pic2.zhimg.com/80/v2-05e55143a477a3a8b615ec9b7703549d_720w.jpg"></p>
+<p>上图是项目的第一层目录，分为 application，domain，facade，infrastructure 四个部分。接下来分别介绍这四个层的作用。</p>
+<h2 id="Application-Layer"><a href="#Application-Layer" class="headerlink" title="Application Layer"></a>Application Layer</h2><p>application 对应了 DDD 中的「应用层」，同时也对应了 Clean Architecture 中的 Application Business Rule。从项目中的实践而言，它作为「粗粒度」业务的入口，也有人喜欢称之为一个 Use Case。在这一层中不应该包含复杂的业务规则，而是对下层的 domain (领域层)进行协调，对业务逻辑进行编排。需要注意的是这一层只应该依赖于下层的 domain层与 infrastructure层。</p>
+<p>我们再看一下 application 内部是怎么划分的:</p>
+<p><img src="https://pic2.zhimg.com/80/v2-b9e87566a883e5cdeb002d2c2d5743a9_720w.jpg"></p>
+<p>dto 目录存放了的是 application 对上层暴露服务所接受的参数类型，也就是大家熟悉的 Data Transfer Object。service 目录则是之前提到的「粗粒度」的服务接口，这些服务需要做的就是按照业务逻辑将 dto 对象转化为 domain 层的领域对象，并调用相关领域对象的方法完成业务逻辑。如果需要还会调用 infrastructure 的服务。再次强调，这部分的服务不应该涉及到复杂，核心的业务逻辑。</p>
+<h2 id="Domain-Layer"><a href="#Domain-Layer" class="headerlink" title="Domain Layer"></a>Domain Layer</h2><p>domain 是 DDD 的核心层，具体的目录结构如下:</p>
+<p><img src="https://pic4.zhimg.com/80/v2-ff40b9ed29121ce07660f2884bc2b2af_720w.jpg"></p>
+<p>domain 之下的是名为 bc1 的目录，这里指代项目中某个业务的 Bounded Context(限界上下文)，关于 BC 的概念会在后续的文章中详细讲解。在 bc1 之下的才是详细的领域分层。</p>
+<p>exception 目录中定义了领域层相关的异常，即一般称之为的 BusinessException，代表违反某些业务逻辑的异常，例如账户余额不足等。model 目录中定了领域对象，一般建议使用「充血模型」进行建模。repository 中定义了领域对象对应的「仓库」，关于 Repository 的概念也会在后续文章中专门讲解。service 则是定义了「领域服务」对象，如果认为 model 定义了业务模型，是名词，那么领域服务就是动词。</p>
+<p>最后我们说一下 event 目录。在一个完整的领域模型中，我们往往需要划分多个不同的 Bounded Context，但是不同的 BC 之间应该怎么交互呢？ Eric Evans 的书中提供了集中不同的解决方案，例如自定义 DSL，防腐层等。而在我们具体的项目中，我们更倾向于使用基于「领域事件」的交互方式，这样不仅不会破坏各个 BC 间的封装，也移除了各自间的耦合。producer 中是事件的发送方，handler 是具体处理事件的对象。关于领域事件也会在后续专门介绍。</p>
+<h2 id="Facade-Layer"><a href="#Facade-Layer" class="headerlink" title="Facade Layer"></a>Facade Layer</h2><p>facade 是整个系统对外暴露服务的部分，具体目录结构如下:</p>
+<p><img src="https://pic3.zhimg.com/80/v2-340743351bf7b52e58c9ae52834102fe_720w.jpg"></p>
+<p>系统对外暴露两种协议的服务，即 RESTful 风格的 API 与 Web Service，对应的实现分别在 rest 与 ws 目录下。facade 层的工作是基于协议对客户端提供的数据进行校验，然后将数据转化为 application 层所需的 dto 对象，并调用 application 提供的服务。facade 中不应该有任何的业务规则与逻辑，只是完成数据对象的转换。</p>
+<h2 id="Infrastructure-Layer"><a href="#Infrastructure-Layer" class="headerlink" title="Infrastructure Layer"></a>Infrastructure Layer</h2><p>infrastructure 层主要负责提供底层的纯技术服务，具体目录结构如下:</p>
+<p><img src="https://pic2.zhimg.com/80/v2-1f86e1f847dd47c051498ea03a471341_720w.jpg"></p>
+<p>这一层的功能都比较直白，是大家熟悉的具体技术实现，与领域模型没有任何的依赖关系，这里就不再赘述了。</p>
+<h2 id="问题与思考"><a href="#问题与思考" class="headerlink" title="问题与思考"></a>问题与思考</h2><p>以上是我们实际项目中结合 Clean Architecture 与 DDD 的分层实现，它的好处很明显，能够比传统的三层架构更好的兼顾领域层的隔离，整个的依赖关系也非常清晰明了，方便开发人员理解，所以我着重谈一些遇到的问题与思考。</p>
+<h3 id="繁琐的数据对象转换"><a href="#繁琐的数据对象转换" class="headerlink" title="繁琐的数据对象转换"></a>繁琐的数据对象转换</h3><p>从系统的分层架构来看，一共有三种类型的数据对象，分别为 DTO，Domain，PO(Persistence Object)。在实现一个业务功能时往往发生多次数据对象的转换，且大部分时间都是 getter 与 setter 的操作，非常的冗繁。</p>
+<p>为了解决这个问题我们引入了 Model Mapper 作为对象映射框架，省去了一些多余的代码。但是依然存在着另一个问题。考虑到 DDD 中的另一个概念: Aggregate(聚合)，当从 PO 转换为 Domain 时，需要以 eager 模式从存储中加载所有的数据，相对而言丧失了延迟加载的优化特性。</p>
+<h3 id="模糊的-Module-与-Bounded-Context"><a href="#模糊的-Module-与-Bounded-Context" class="headerlink" title="模糊的 Module 与 Bounded Context"></a>模糊的 Module 与 Bounded Context</h3><p>在 DDD 理论中 Module 与 Bounded Context 是不同的东西，在上述的分层架构中，领域层有着明确的 BC 划分，但是在其他层却没有这些。最直接的现象就是随着系统功能的逐渐增加，业务规则日益复杂，application 目录下 dto，service 下的类会越来越多，由于缺乏进一层的抽象，导致后续的开发人员很难理解。</p>
+<h3 id="领域事件引入的事务问题"><a href="#领域事件引入的事务问题" class="headerlink" title="领域事件引入的事务问题"></a>领域事件引入的事务问题</h3><p>在引入领域事件之后，一部分的业务流程变为了异步调用，因此事务边界的管理变得更为复杂，在某些情况下无法达到事务一致性的要求。这无疑增加了开发者的心智负担，也提升了不少测试的难度。在这种情况需要进一步加深对业务的理解，尽量将事务特性从业务规则中移除或是绕开。</p>
+<h3 id="架构复杂性的提升"><a href="#架构复杂性的提升" class="headerlink" title="架构复杂性的提升"></a>架构复杂性的提升</h3><p>架构复杂性的提升带来的是开发人员学习的成本提升，在实践中，我们发现很多时候开发人员的代码中引入了错误的依赖关系，例如 domain 的方法签名中有来自于 dto 的对象，或是 facade 中引入了 domain 的领域对象。对于这种问题比较好的解决方案是加强 code review，加强开发人员对分层思想的理解，以及引入 Unit test your Java architecture - ArchUnit 这样的框架，在 CI 时对代码的依赖关系进行静态检查。</p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>本次介绍了项目中使用的 DDD 分层架构实现与遇到的问题，其实并没有一种完全正确或是适合任何项目的分层架构，掌握背后的思想与学会如何做出妥协才是一个架构师的工作。下一篇我会介绍项目中如何实现 Entity(实体)，Value Object(值对象) 与 Aggregate(聚合)。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://herowk.github.io">Kyle Wong</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://herowk.github.io/2020/10/07/%E9%A2%86%E5%9F%9F%E9%A9%B1%E5%8A%A8%E8%AE%BE%E8%AE%A1%E5%AE%9E%E8%B7%B5%E6%89%8B%E5%86%8C-2-%E5%AE%9E%E7%8E%B0%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84/">https://herowk.github.io/2020/10/07/%E9%A2%86%E5%9F%9F%E9%A9%B1%E5%8A%A8%E8%AE%BE%E8%AE%A1%E5%AE%9E%E8%B7%B5%E6%89%8B%E5%86%8C-2-%E5%AE%9E%E7%8E%B0%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://herowk.github.io" target="_blank">Blue Maple</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"></div><div class="post_share"><div class="social-share" data-image="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/gh/overtrue/share.js@master/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2020/10/08/%E9%A2%86%E5%9F%9F%E9%A9%B1%E5%8A%A8%E8%AE%BE%E8%AE%A1%E5%AE%9E%E8%B7%B5%E6%89%8B%E5%86%8C-3-Entity-Value-Object/"><img class="prev-cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">领域驱动设计实践手册(3. Entity, Value Object)</div></div></a></div><div class="next-post pull-right"><a href="/2020/10/07/%E9%A2%86%E5%9F%9F%E9%A9%B1%E5%8A%A8%E8%AE%BE%E8%AE%A1%E5%AE%9E%E8%B7%B5%E6%89%8B%E5%86%8C-1-Get-Started/"><img class="next-cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">领域驱动设计实践手册(1.Get Started)</div></div></a></div></nav></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Kyle Wong</div><div class="author-info__description">君子慎独，不欺暗室。<br>卑以自牧，含章可贞。<br>大丈夫立于天地之间，<br>当养天地浩然正气，<br>行光明磊落之事。<br>克己，慎独，守心，明性。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">10</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">2</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/herowk"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">Never Give Up!</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B9%E7%9B%AE%E7%9A%84%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84"><span class="toc-number">1.</span> <span class="toc-text">项目的目录结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Application-Layer"><span class="toc-number">2.</span> <span class="toc-text">Application Layer</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Domain-Layer"><span class="toc-number">3.</span> <span class="toc-text">Domain Layer</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Facade-Layer"><span class="toc-number">4.</span> <span class="toc-text">Facade Layer</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Infrastructure-Layer"><span class="toc-number">5.</span> <span class="toc-text">Infrastructure Layer</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%97%AE%E9%A2%98%E4%B8%8E%E6%80%9D%E8%80%83"><span class="toc-number">6.</span> <span class="toc-text">问题与思考</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B9%81%E7%90%90%E7%9A%84%E6%95%B0%E6%8D%AE%E5%AF%B9%E8%B1%A1%E8%BD%AC%E6%8D%A2"><span class="toc-number">6.1.</span> <span class="toc-text">繁琐的数据对象转换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E7%B3%8A%E7%9A%84-Module-%E4%B8%8E-Bounded-Context"><span class="toc-number">6.2.</span> <span class="toc-text">模糊的 Module 与 Bounded Context</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A2%86%E5%9F%9F%E4%BA%8B%E4%BB%B6%E5%BC%95%E5%85%A5%E7%9A%84%E4%BA%8B%E5%8A%A1%E9%97%AE%E9%A2%98"><span class="toc-number">6.3.</span> <span class="toc-text">领域事件引入的事务问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E5%A4%8D%E6%9D%82%E6%80%A7%E7%9A%84%E6%8F%90%E5%8D%87"><span class="toc-number">6.4.</span> <span class="toc-text">架构复杂性的提升</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-number">7.</span> <span class="toc-text">小结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/01/21/Consul%E7%9A%84%E5%8F%8D%E7%86%B5/" title="Consul的反熵"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Consul的反熵"/></a><div class="content"><a class="title" href="/2021/01/21/Consul%E7%9A%84%E5%8F%8D%E7%86%B5/" title="Consul的反熵">Consul的反熵</a><time datetime="2021-01-21T02:42:53.000Z" title="发表于 2021-01-21 10:42:53">2021-01-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/01/21/%E4%BD%BF%E7%94%A8Consul%E5%81%9A%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0%E7%9A%84%E8%8B%A5%E5%B9%B2%E5%A7%BF%E5%8A%BF/" title="使用Consul做服务发现的若干姿势"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="使用Consul做服务发现的若干姿势"/></a><div class="content"><a class="title" href="/2021/01/21/%E4%BD%BF%E7%94%A8Consul%E5%81%9A%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0%E7%9A%84%E8%8B%A5%E5%B9%B2%E5%A7%BF%E5%8A%BF/" title="使用Consul做服务发现的若干姿势">使用Consul做服务发现的若干姿势</a><time datetime="2021-01-21T02:27:55.000Z" title="发表于 2021-01-21 10:27:55">2021-01-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2020/11/02/%E7%AC%AC%E4%BA%8C%E5%B1%8A83%E8%A1%8C%E4%BB%A3%E7%A0%81%E9%87%8D%E6%9E%84%E5%A4%A7%E8%B5%9B%E8%AE%B0%E5%BD%95/" title="第二届83行代码重构大赛记录"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="第二届83行代码重构大赛记录"/></a><div class="content"><a class="title" href="/2020/11/02/%E7%AC%AC%E4%BA%8C%E5%B1%8A83%E8%A1%8C%E4%BB%A3%E7%A0%81%E9%87%8D%E6%9E%84%E5%A4%A7%E8%B5%9B%E8%AE%B0%E5%BD%95/" title="第二届83行代码重构大赛记录">第二届83行代码重构大赛记录</a><time datetime="2020-11-02T05:56:15.000Z" title="发表于 2020-11-02 13:56:15">2020-11-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2020/10/18/thanksphoto/" title="thanksphoto"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="thanksphoto"/></a><div class="content"><a class="title" href="/2020/10/18/thanksphoto/" title="thanksphoto">thanksphoto</a><time datetime="2020-10-18T14:06:19.000Z" title="发表于 2020-10-18 22:06:19">2020-10-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2020/10/08/%E9%A2%86%E5%9F%9F%E9%A9%B1%E5%8A%A8%E8%AE%BE%E8%AE%A1%E5%AE%9E%E8%B7%B5%E6%89%8B%E5%86%8C-6-Bounded-Context-%E9%99%90%E7%95%8C%E4%B8%8A%E4%B8%8B%E6%96%87/" title="领域驱动设计实践手册(6. Bounded Context - 限界上下文)"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="领域驱动设计实践手册(6. Bounded Context - 限界上下文)"/></a><div class="content"><a class="title" href="/2020/10/08/%E9%A2%86%E5%9F%9F%E9%A9%B1%E5%8A%A8%E8%AE%BE%E8%AE%A1%E5%AE%9E%E8%B7%B5%E6%89%8B%E5%86%8C-6-Bounded-Context-%E9%99%90%E7%95%8C%E4%B8%8A%E4%B8%8B%E6%96%87/" title="领域驱动设计实践手册(6. Bounded Context - 限界上下文)">领域驱动设计实践手册(6. Bounded Context - 限界上下文)</a><time datetime="2020-10-08T08:51:58.000Z" title="发表于 2020-10-08 16:51:58">2020-10-08</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By Kyle Wong</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script><div class="js-pjax"><script>(() => {
+  const $mermaidWrap = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaidWrap.length) {
+    window.runMermaid = () => {
+      window.loadMermaid = true
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+      Array.from($mermaidWrap).forEach((item, index) => {
+        const mermaidSrc = item.firstElementChild
+        const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+        const mermaidID = 'mermaid-' + index
+        const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+        mermaid.mermaidAPI.render(mermaidID, mermaidDefinition, (svgCode) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svgCode)
+        })
+      })
+    }
+
+    const loadMermaid = () => {
+      window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+    }
+
+    window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

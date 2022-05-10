@@ -1,0 +1,308 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>使用Consul做服务发现的若干姿势 | Blue Maple</title><meta name="keywords" content="Consul"><meta name="author" content="Kyle Wong"><meta name="copyright" content="Kyle Wong"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="转载至:https:&#x2F;&#x2F;www.cnblogs.com&#x2F;bossma&#x2F;p&#x2F;9756809.html 从2016年起就开始接触Consul，使用的主要目的就是做服务发现，后来逐步应用于生产环境，并总结了少许使用经验。最开始使用Consul的人不多，为了方便交流创建了一个QQ群，这两年微服务越来越火，使用Consul的人也越来越多，目前群里已有400多人，经常有人问一些问题，比如：  服务注册到节点后">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用Consul做服务发现的若干姿势">
+<meta property="og:url" content="https://herowk.github.io/2021/01/21/%E4%BD%BF%E7%94%A8Consul%E5%81%9A%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0%E7%9A%84%E8%8B%A5%E5%B9%B2%E5%A7%BF%E5%8A%BF/index.html">
+<meta property="og:site_name" content="Blue Maple">
+<meta property="og:description" content="转载至:https:&#x2F;&#x2F;www.cnblogs.com&#x2F;bossma&#x2F;p&#x2F;9756809.html 从2016年起就开始接触Consul，使用的主要目的就是做服务发现，后来逐步应用于生产环境，并总结了少许使用经验。最开始使用Consul的人不多，为了方便交流创建了一个QQ群，这两年微服务越来越火，使用Consul的人也越来越多，目前群里已有400多人，经常有人问一些问题，比如：  服务注册到节点后">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+<meta property="article:published_time" content="2021-01-21T02:27:55.000Z">
+<meta property="article:modified_time" content="2021-01-21T02:44:30.907Z">
+<meta property="article:author" content="Kyle Wong">
+<meta property="article:tag" content="Consul">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://herowk.github.io/2021/01/21/%E4%BD%BF%E7%94%A8Consul%E5%81%9A%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0%E7%9A%84%E8%8B%A5%E5%B9%B2%E5%A7%BF%E5%8A%BF/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery@2/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '使用Consul做服务发现的若干姿势',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2021-01-21 10:44:30'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.1.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">10</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">2</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档文章</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">Blue Maple</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档文章</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 链接</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">使用Consul做服务发现的若干姿势</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2021-01-21T02:27:55.000Z" title="发表于 2021-01-21 10:27:55">2021-01-21</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-01-21T02:44:30.907Z" title="更新于 2021-01-21 10:44:30">2021-01-21</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="使用Consul做服务发现的若干姿势"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><p>转载至:<a target="_blank" rel="noopener" href="https://www.cnblogs.com/bossma/p/9756809.html">https://www.cnblogs.com/bossma/p/9756809.html</a></p>
+<p>从2016年起就开始接触Consul，使用的主要目的就是做服务发现，后来逐步应用于生产环境，并总结了少许使用经验。最开始使用Consul的人不多，为了方便交流创建了一个QQ群，这两年微服务越来越火，使用Consul的人也越来越多，目前群里已有400多人，经常有人问一些问题，比如：</p>
+<ul>
+<li>服务注册到节点后，其他节点为什么没有同步？</li>
+<li>Client是干什么的？（Client有什么作用？）</li>
+<li>能不能直接注册到Server？（是否只有Server节点就够了？）</li>
+<li>服务信息是保存在哪里的？</li>
+<li>如果节点挂了健康检查能不能转移到别的节点？</li>
+</ul>
+<p>有些人可能对服务注册和发现还没有概念，有些人可能使用过其它服务发现的工具，比如zookeeper，etcd，会有一些先入为主的经验。这篇文章将结合Consul的官方文档和自己的实际经验，谈一下Consul做服务发现的方式，文中尽量不依赖具体的框架和开发语言，从原理上进行说明，希望能够讲清楚上边的几个问题。</p>
+<h2 id="为什么使用服务发现"><a href="#为什么使用服务发现" class="headerlink" title="为什么使用服务发现"></a>为什么使用服务发现</h2><p>防止硬编码、容灾、水平扩缩容、提高运维效率等等，只要你想使用服务发现总能找到合适的理由。</p>
+<p>一般的说法是因为使用微服务架构。传统的单体架构不够灵活不能很好的适应变化，从而向微服务架构进行转换，而伴随着大量服务的出现，管理运维十分不便，于是开始搞一些自动化的策略，服务发现应运而生。所以如果需要使用服务发现，你应该有一些对服务治理的痛点。</p>
+<p>但是引入服务发现就可能引入一些技术栈，增加系统总体的复杂度，如果你只有很少的几个服务，比如10个以下，并且业务不怎么变化，吞吐量预计也很稳定，可能就没有必要使用服务发现。</p>
+<h2 id="Consul内部原理"><a href="#Consul内部原理" class="headerlink" title="Consul内部原理"></a>Consul内部原理</h2><p>下面这张图来源于Consul官网，很好的解释了Consul的工作原理，先大致看一下。</p>
+<p><a target="_blank" rel="noopener" href="http://blog.bossma.cn/wp-content/uploads/2018/10/consul-arch-420ce04a.png"><img src="http://blog.bossma.cn/wp-content/uploads/2018/10/consul-arch-420ce04a.png" alt="img"></a></p>
+<p>首先Consul支持多数据中心，在上图中有两个DataCenter，他们通过Internet互联，同时请注意为了提高通信效率，只有Server节点才加入跨数据中心的通信。</p>
+<p>在单个数据中心中，Consul分为Client和Server两种节点（所有的节点也被称为Agent），Server节点保存数据，Client负责健康检查及转发数据请求到Server；Server节点有一个Leader和多个Follower，Leader节点会将数据同步到Follower，Server的数量推荐是3个或者5个，在Leader挂掉的时候会启动选举机制产生一个新的Leader。</p>
+<p>集群内的Consul节点通过gossip协议（流言协议）维护成员关系，也就是说某个节点了解集群内现在还有哪些节点，这些节点是Client还是Server。单个数据中心的流言协议同时使用TCP和UDP通信，并且都使用8301端口。跨数据中心的流言协议也同时使用TCP和UDP通信，端口使用8302。</p>
+<p>集群内数据的读写请求既可以直接发到Server，也可以通过Client使用RPC转发到Server，请求最终会到达Leader节点，在允许数据轻微陈旧的情况下，读请求也可以在普通的Server节点完成，集群内数据的读写和复制都是通过TCP的8300端口完成。</p>
+<h2 id="Consul服务发现原理"><a href="#Consul服务发现原理" class="headerlink" title="Consul服务发现原理"></a>Consul服务发现原理</h2><p>下面这张图是自己画的，基本描述了服务发现的完整流程，先大致看一下。</p>
+<p><a target="_blank" rel="noopener" href="http://blog.bossma.cn/wp-content/uploads/2018/10/consul-service-discovery-principle.png"><img src="http://blog.bossma.cn/wp-content/uploads/2018/10/consul-service-discovery-principle.png" alt="img"></a></p>
+<p>首先需要有一个正常的Consul集群，有Server，有Leader。这里在服务器Server1、Server2、Server3上分别部署了Consul Server，假设他们选举了Server2上的Consul Server节点为Leader。这些服务器上最好只部署Consul程序，以尽量维护Consul Server的稳定。</p>
+<p>然后在服务器Server4和Server5上通过Consul Client分别注册Service A、B、C，这里每个Service分别部署在了两个服务器上，这样可以避免Service的单点问题。服务注册到Consul可以通过HTTP API（8500端口）的方式，也可以通过Consul配置文件的方式。Consul Client可以认为是无状态的，它将注册信息通过RPC转发到Consul Server，服务信息保存在Server的各个节点中，并且通过Raft实现了强一致性。</p>
+<p>最后在服务器Server6中Program D需要访问Service B，这时候Program D首先访问本机Consul Client提供的HTTP API，本机Client会将请求转发到Consul Server，Consul Server查询到Service B当前的信息返回，最终Program D拿到了Service B的所有部署的IP和端口，然后就可以选择Service B的其中一个部署并向其发起请求了。如果服务发现采用的是DNS方式，则Program D中直接使用Service B的服务发现域名，域名解析请求首先到达本机DNS代理，然后转发到本机Consul Client，本机Client会将请求转发到Consul Server，Consul Server查询到Service B当前的信息返回，最终Program D拿到了Service B的某个部署的IP和端口。</p>
+<p>图中描述的部署架构笔者认为是最普适最简单的方案，从某些默认配置或设计上看也是官方希望使用者采用的方案，比如8500端口默认监听127.0.0.1，当然有些同学不赞同，后边会提到其他方案。</p>
+<h2 id="Consul实际使用"><a href="#Consul实际使用" class="headerlink" title="Consul实际使用"></a>Consul实际使用</h2><p>为了更快的熟悉Consul的原理及其使用方式，最好还是自己实际测试下。</p>
+<p>Consul安装十分简单，但是在一台机器上不方便搭建集群进行测试，使用虚拟机比较重，所以这里选择了docker。这里用了Windows 10，需要是专业版，因为Windows上的Docker依赖Hyper-V，而这个需要专业版才能支持。这里对于Docker的使用不会做过多的描述，如果遇到相关问题请搜索一下。</p>
+<h3 id="安装Docker"><a href="#安装Docker" class="headerlink" title="安装Docker"></a>安装Docker</h3><p>通过这个地址下载安装：</p>
+<p><a target="_blank" rel="noopener" href="https://store.docker.com/editions/community/docker-ce-desktop-windows">https://store.docker.com/editions/community/docker-ce-desktop-windows</a></p>
+<p>安装完成后打开 Windows PowerShell，输入docker –version，如果正常输出docker版本就可以了。</p>
+<h3 id="启动Consul集群"><a href="#启动Consul集群" class="headerlink" title="启动Consul集群"></a>启动Consul集群</h3><p>在 Windows PowerShell中执行命令拉取最新版本的Consul镜像：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker pull consul</span><br></pre></td></tr></table></figure>
+
+<p>然后就可以启动集群了，这里启动4个Consul Agent，3个Server（会选举出一个leader），1个Client。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">#启动第1个Server节点，集群要求要有3个Server，将容器8500端口映射到主机8900端口，同时开启管理界面</span><br><span class="line">docker run -d --name=consul1 -p 8900:8500 -e CONSUL_BIND_INTERFACE=eth0 consul agent --server=true --bootstrap-expect=3 --client=0.0.0.0 -ui</span><br><span class="line"> </span><br><span class="line">#启动第2个Server节点，并加入集群</span><br><span class="line">docker run -d --name=consul2 -e CONSUL_BIND_INTERFACE=eth0 consul agent --server=true --client=0.0.0.0 --join 172.17.0.2</span><br><span class="line"> </span><br><span class="line">#启动第3个Server节点，并加入集群</span><br><span class="line">docker run -d --name=consul3 -e CONSUL_BIND_INTERFACE=eth0 consul agent --server=true --client=0.0.0.0 --join 172.17.0.2</span><br><span class="line"> </span><br><span class="line">#启动第4个Client节点，并加入集群</span><br><span class="line">docker run -d --name=consul4 -e CONSUL_BIND_INTERFACE=eth0 consul agent --server=false --client=0.0.0.0 --join 172.17.0.2</span><br></pre></td></tr></table></figure>
+
+<p>第1个启动容器的IP一般是172.17.0.2，后边启动的几个容器IP会排着来：172.17.0.3、172.17.0.4、172.17.0.5。</p>
+<p>这些Consul节点在Docker的容器内是互通的，他们通过桥接的模式通信。但是如果主机要访问容器内的网络，需要做端口映射。在启动第一个容器时，将Consul的8500端口映射到了主机的8900端口，这样就可以方便的通过主机的浏览器查看集群信息。</p>
+<p><a target="_blank" rel="noopener" href="http://blog.bossma.cn/wp-content/uploads/2018/09/docker-consul-development-1.png"><img src="http://blog.bossma.cn/wp-content/uploads/2018/09/docker-consul-development-1.png" alt="img"></a></p>
+<p>进入容器consul1：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">docker exec -it consul1 /bin/sh</span><br><span class="line"> </span><br><span class="line">#执行ls后可以看到consul就在根目录</span><br><span class="line">ls</span><br></pre></td></tr></table></figure>
+
+<p>输入exit可以跳出容器。</p>
+<h3 id="服务注册"><a href="#服务注册" class="headerlink" title="服务注册"></a>服务注册</h3><p>自己写一个web服务，用最熟悉的开发语言就好了，不过需要在容器中能够跑起来，可能需要安装运行环境，比如python、java、.net core等的sdk及web服务器，需要注意的是Consul的docker镜像基于alpine系统，具体运行环境的安装请搜索一下。</p>
+<p>这里写了一个hello服务，通过配置文件的方式注册到Consul，服务的相关信息：</p>
+<ul>
+<li>name：hello，服务名称，需要能够区分不同的业务服务，可以部署多份并使用相同的name注册。</li>
+<li>id：hello1，服务id，在每个节点上需要唯一，如果有重复会被覆盖。</li>
+<li>address：172.17.0.5，服务所在机器的地址。</li>
+<li>port：5000，服务的端口。</li>
+<li>健康检查地址：<a target="_blank" rel="noopener" href="http://localhost:5000/%EF%BC%8C%E5%A6%82%E6%9E%9C%E8%BF%94%E5%9B%9EHTTP%E7%8A%B6%E6%80%81%E7%A0%81%E4%B8%BA200%E5%B0%B1%E4%BB%A3%E8%A1%A8%E6%9C%8D%E5%8A%A1%E5%81%A5%E5%BA%B7%EF%BC%8C%E6%AF%8F10%E7%A7%92Consul%E8%AF%B7%E6%B1%82%E4%B8%80%E6%AC%A1%EF%BC%8C%E8%AF%B7%E6%B1%82%E8%B6%85%E6%97%B6%E6%97%B6%E9%97%B4%E4%B8%BA1%E7%A7%92%E3%80%82">http://localhost:5000/，如果返回HTTP状态码为200就代表服务健康，每10秒Consul请求一次，请求超时时间为1秒。</a></li>
+</ul>
+<p>请将下面的内容保存成文件services.json，并上传到容器的&#x2F;consul&#x2F;config目录中。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;services&quot;: [</span><br><span class="line">    &#123;</span><br><span class="line">      &quot;id&quot;: &quot;hello1&quot;,</span><br><span class="line">      &quot;name&quot;: &quot;hello&quot;,</span><br><span class="line">      &quot;tags&quot;: [</span><br><span class="line">        &quot;primary&quot;</span><br><span class="line">      ],</span><br><span class="line">      &quot;address&quot;: &quot;172.17.0.5&quot;,</span><br><span class="line">      &quot;port&quot;: 5000,</span><br><span class="line">      &quot;checks&quot;: [</span><br><span class="line">        &#123;</span><br><span class="line">        &quot;http&quot;: &quot;http://localhost:5000/&quot;,</span><br><span class="line">        &quot;tls_skip_verify&quot;: false,</span><br><span class="line">        &quot;method&quot;: &quot;Get&quot;,</span><br><span class="line">        &quot;interval&quot;: &quot;10s&quot;,</span><br><span class="line">        &quot;timeout&quot;: &quot;1s&quot;</span><br><span class="line">        &#125;</span><br><span class="line">      ]</span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>复制到consul config目录：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker cp &#123;这里请替换成services.json的本地路径&#125; consul4:/consul/config</span><br></pre></td></tr></table></figure>
+
+<p>重新加载consul配置：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">consul reload</span><br></pre></td></tr></table></figure>
+
+<p>然后这个服务就注册成功了。可以将这个服务部署到多个节点，比如部署到consul1和consul4，并同时运行。</p>
+<p><a target="_blank" rel="noopener" href="http://blog.bossma.cn/wp-content/uploads/2018/10/consul-service-reg-1.png"><img src="http://blog.bossma.cn/wp-content/uploads/2018/10/consul-service-reg-1.png" alt="img"></a></p>
+<h3 id="服务发现"><a href="#服务发现" class="headerlink" title="服务发现"></a>服务发现</h3><p>服务注册成功以后，调用方获取相应服务地址的过程就是服务发现。Consul提供了多种方式。</p>
+<p><strong>HTTP API方式：</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl http://127.0.0.1:8500/v1/health/service/hello?passing=false</span><br></pre></td></tr></table></figure>
+
+<p>返回的信息包括注册的Consul节点信息、服务信息及服务的健康检查信息。这里用了一个参数passing&#x3D;false，会自动过滤掉不健康的服务，包括本身不健康的服务和不健康的Consul节点上的服务，从这个设计上可以看出Consul将服务的状态绑定到了节点的状态。</p>
+<p>如果服务有多个部署，会返回服务的多条信息，调用方需要决定使用哪个部署，常见的可以随机或者轮询。为了提高服务吞吐量，以及减轻Consul的压力，还可以缓存获取到的服务节点信息，不过要做好容错的方案，因为缓存服务部署可能会变得不可用。具体是否缓存需要结合自己的访问量及容错规则来确定。</p>
+<p>上边的参数passing默认为false，也就是说不健康的节点也会返回，结合获取节点全部服务的方法，这里可以做到获取全部服务的实时健康状态，并对不健康的服务进行报警处理。</p>
+<p><strong>DNS方式：</strong></p>
+<p>hello服务的域名是：hello.service.dc1.consul，后边的service代表服务，固定；dc1是数据中心的名字，可以配置；最后的consul也可以配置。</p>
+<p>官方在介绍DNS方式时经常使用dig命令进行测试，但是alpine系统中没有dig命令，也没有相关的包可以安装，但是有人实现了，下载下来解压到bin目录就可以了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -L https://github.com/sequenceiq/docker-alpine-dig/releases/download/v9.10.2/dig.tgz|tar -xzv -C /usr/local/bin</span><br></pre></td></tr></table></figure>
+
+<p>然后执行dig命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dig @127.0.0.1 -p 8600 hello.service.dc1.consul. ANY</span><br></pre></td></tr></table></figure>
+
+<p>如果报错：parse of &#x2F;etc&#x2F;resolv.conf failed ，请将resolv.conf中的search那行删掉。</p>
+<p>正常的话可以看到返回了服务部署的IP信息，如果有多个部署会看到多个，如果某个部署不健康了会自动剔除（包括部署所在节点不健康的情况）。需要注意这种方式不会返回服务的端口信息。</p>
+<p>使用DNS的方式可以在程序中集成一个DNS解析库，也可以自定义本地的DNS Server。自定义本地DNS Server是指将.consul域的请求全部转发到Consul Agent，Windows上有<a target="_blank" rel="noopener" href="https://github.com/stackia/DNSAgent">DNS Agent</a>，Linux上有Dnsmasq；对于非Consul提供的服务则继续请求原DNS；使用DNS Server时Consul会随机返回具体服务的多个部署中的一个，仅能提供简单的负载均衡。</p>
+<p>DNS缓存问题：DNS缓存一般存在于应用程序的网络库、本地DNS客户端或者代理，Consul Sever本身可以认为是没有缓存的（为了提高集群DNS吞吐量，可以设置使用普通Server上的陈旧数据，但影响一般不大），DNS缓存可以减轻Consul Server的访问压力，但是也会导致访问到不可用的服务。使用时需要根据实际访问量和容错能力确定DNS缓存方案。</p>
+<p><strong>Consul Template</strong></p>
+<p>Consul Template是Consul官方提供的一个工具，严格的来说不是标准的服务发现方式。这个工具会通过Consul监听数据变化然后替换模板中使用的标签，并发布替换后的文件到指定的目录。在nginx等web服务器做反向代理和负载均衡时特别有用。</p>
+<p>Consul的docker镜像中没有集成这个工具，需要自己安装，比较简单：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -L https://releases.hashicorp.com/consul-template/0.19.5/consul-template_0.19.5_linux_amd64.tgz|tar -xzv -C /usr/local/bin</span><br></pre></td></tr></table></figure>
+
+<p>然后创建一个文件：in.tpl，内容为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&#123;&#123; range service &quot;hello&quot; &#125;&#125;</span><br><span class="line">server &#123;&#123; .Name &#125;&#125;&#123;&#123; .Address &#125;&#125;:&#123;&#123; .Port &#125;&#125;&#123;&#123; end &#125;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个标签会遍历hello服务的所有部署，并按照指定的格式输出。在此文件目录下执行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nohup consul-template -template &quot;in.tpl:out.txt&quot; &amp;</span><br></pre></td></tr></table></figure>
+
+<p>现在你可以cat out.txt查看根据模板生产的内容，新增或者关闭服务，文件内容会自动更新。</p>
+<p>此工具我没有用在生产环境，详细使用请访问：<a target="_blank" rel="noopener" href="https://github.com/hashicorp/consul-template">https://github.com/hashicorp/consul-template</a></p>
+<h3 id="节点和服务注销"><a href="#节点和服务注销" class="headerlink" title="节点和服务注销"></a>节点和服务注销</h3><p>节点和服务的注销可以使用HTTP API:</p>
+<ul>
+<li>注销任意节点和服务：&#x2F;catalog&#x2F;deregister</li>
+<li>注销当前节点的服务：&#x2F;agent&#x2F;service&#x2F;deregister&#x2F;:service_id</li>
+</ul>
+<p>如果某个节点不继续使用了，也可以在本机使用consul leave命令，或者在其它节点使用consul force-leave 节点Id。</p>
+<h2 id="Consul的健康检查"><a href="#Consul的健康检查" class="headerlink" title="Consul的健康检查"></a>Consul的健康检查</h2><p>Consul做服务发现是专业的，健康检查是其中一项必不可少的功能，其提供Script&#x2F;TCP&#x2F;HTTP+Interval，以及TTL等多种方式。服务的健康检查由服务注册到的Agent来处理，这个Agent既可以是Client也可以是Server。</p>
+<p>很多同学都使用ZooKeeper或者etcd做服务发现，使用Consul时发现节点挂掉后服务的状态变为不可用了，所以有同学问服务为什么不在各个节点之间同步？这个根本原因是服务发现的实现原理不同。</p>
+<p><strong>Consul与ZooKeeper、etcd的区别</strong></p>
+<p>后边这两个工具是通过键值存储来实现服务的注册与发现。</p>
+<ul>
+<li>ZooKeeper利用临时节点的机制，业务服务启动时创建临时节点，节点在服务就在，节点不存在服务就不存在。</li>
+<li>etcd利用TTL机制，业务服务启动时创建键值对，定时更新ttl，ttl过期则服务不可用。</li>
+</ul>
+<p>ZooKeeper和etcd的键值存储都是强一致性的，也就是说键值对会自动同步到多个节点，只要在某个节点上存在就可以认为对应的业务服务是可用的。</p>
+<p>Consul的数据同步也是强一致性的，服务的注册信息会在Server节点之间同步，相比ZK、etcd，服务的信息还是持久化保存的，即使服务部署不可用了，仍旧可以查询到这个服务部署。但是业务服务的可用状态是由注册到的Agent来维护的，Agent如果不能正常工作了，则无法确定服务的真实状态，并且Consul是相当稳定了，Agent挂掉的情况下大概率服务器的状态也可能是不好的，此时屏蔽掉此节点上的服务是合理的。Consul也确实是这样设计的，DNS接口会自动屏蔽挂掉节点上的服务，HTTP API也认为挂掉节点上的服务不是passing的。</p>
+<p>鉴于Consul健康检查的这种机制，同时避免单点故障，所有的业务服务应该部署多份，并注册到不同的Consul节点。部署多份可能会给你的设计带来一些挑战，因为调用方同时访问多个服务实例可能会由于会话不共享导致状态不一致，这个有许多成熟的解决方案，可以去查询，这里不做说明。</p>
+<p><strong>健康检查能不能支持故障转移？</strong></p>
+<p>上边提到健康检查是由服务注册到的Agent来处理的，那么如果这个Agent挂掉了，会不会有别的Agent来接管健康检查呢？答案是否定的。</p>
+<p>从问题产生的原因来看，在应用于生产环境之前，肯定需要对各种场景进行测试，没有问题才会上线，所以显而易见的问题可以屏蔽掉；如果是新版本Consul的BUG导致的，此时需要降级；如果这个BUG是偶发的，那么只需要将Consul重新拉起来就可以了，这样比较简单；如果是硬件、网络或者操作系统故障，那么节点上服务的可用性也很难保障，不需要别的Agent接管健康检查。</p>
+<p>从实现上看，选择哪个节点是个问题，这需要实时或准实时同步各个节点的负载状态，而且由于业务服务运行状态多变，即使当时选择出了负载比较轻松的节点，无法保证某个时段任务又变得繁重，可能造成新的更大范围的崩溃。如果原来的节点还要启动起来，那么接管的健康检查是否还要撤销，如果要，需要记录服务们最初注册的节点，然后有一个监听机制来触发，如果不要，通过服务发现就会获取到很多冗余的信息，并且随着时间推移，这种数据会越来越多，系统变的无序。</p>
+<p>从实际应用看，节点上的服务可能既要被发现，又要发现别的服务，如果节点挂掉了，仅提供被发现的功能实际上服务还是不可用的。当然发现别的服务也可以不使用本机节点，可以通过访问一个Nginx实现的若干Consul节点的负载均衡来实现，这无疑又引入了新的技术栈。</p>
+<p>如果不是上边提到的问题，或者你可以通过一些方式解决这些问题，健康检查接管的实现也必然是比较复杂的，因为分布式系统的状态同步是比较复杂的。同时不要忘了服务部署了多份，挂掉一个不应该影响系统的快速恢复，所以没必要去做这个接管。</p>
+<h2 id="Consul的其它部署架构"><a href="#Consul的其它部署架构" class="headerlink" title="Consul的其它部署架构"></a>Consul的其它部署架构</h2><p>如果你实在不想在每个主机部署Consul Client，还有一个多路注册的方案可供选择，这是交流群中获得的思路。</p>
+<p><img src="https://img2018.cnblogs.com/blog/73642/201810/73642-20181008201645275-184260107.png" alt="img"></p>
+<p>如图所示，在专门的服务器上部署Consul Client，然后每个服务都注册到多个Client，这里为了避免服务单点问题还是每个服务部署多份，需要服务发现时，程序向一个提供负载均衡的程序发起请求，该程序将请求转发到某个Consul Client。这种方案需要注意将Consul的8500端口绑定到私网IP上，默认只有127.0.0.1。</p>
+<p>这个架构的优势：</p>
+<ul>
+<li>Consul节点服务器与应用服务器隔离，互相干扰少；</li>
+<li>不用每台主机都部署Consul，方便Consul的集中管理；</li>
+<li>某个Consul Client挂掉的情况下，注册到其上的服务仍有机会被访问到；</li>
+</ul>
+<p>但也需要注意其缺点：</p>
+<ul>
+<li>引入更多技术栈：负载均衡的实现，不仅要考虑Consul Client的负载均衡，还要考虑负载均衡本身的单点问题。</li>
+<li>Client的节点数量：单个Client如果注册的服务太多，负载较重，需要有个算法（比如hash一致）合理分配每个Client上的服务数量，以及确定Client的总体数量。</li>
+<li>服务发现要过滤掉重复的注册，因为注册到了多个节点会认为是多个部署（DNS接口不会有这个问题）。</li>
+</ul>
+<p>这个方案其实还可以优化，服务发现使用的负载均衡可以直接代理Server节点，因为相关请求还是会转发到Server节点，不如直接就发到Server。</p>
+<p><strong>是否可以只有Server？</strong></p>
+<p>这个问题的答案还是有关服务数量的问题，首先Server的节点数量不是越多越好，3个或者5个是推荐的数量，数量越多数据同步的处理越慢（强一致性）；然后每个节点可以注册的服务数量是有上限的，这个受限于软硬件的处理能力。所以如果你的服务只有10个左右，只有Server问题是不大的，但是这时候有没有必要使用Consul呢？因此正常使用Consul的时候还是要有Client才好，这也符合Consul的反熵设计。</p>
+<p>大家可以将这个部署架构与前文提到的普世架构对比下，看看哪个更适合自己，或者你有更好的方案欢迎分享出来。</p>
+<h2 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h2><p>在编写这篇文章的时候，发现很多地方还不了解，很多框架也没有使用过，增长了不少见识，同时确认了一些之前似是而非的细节，但是文中仍可能有些理解错误，或者说的不是很清楚的地方，比如如何结合容器在生产环境使用，欢迎大家加群交流（群号: 234939415）！</p>
+<p>我的独立博客：<a target="_blank" rel="noopener" href="http://blog.bossma.cn/consul/consul-service-register-and-discovery-style/">http://blog.bossma.cn/consul/consul-service-register-and-discovery-style/</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://herowk.github.io">Kyle Wong</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://herowk.github.io/2021/01/21/%E4%BD%BF%E7%94%A8Consul%E5%81%9A%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0%E7%9A%84%E8%8B%A5%E5%B9%B2%E5%A7%BF%E5%8A%BF/">https://herowk.github.io/2021/01/21/%E4%BD%BF%E7%94%A8Consul%E5%81%9A%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0%E7%9A%84%E8%8B%A5%E5%B9%B2%E5%A7%BF%E5%8A%BF/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://herowk.github.io" target="_blank">Blue Maple</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/Consul/">Consul</a></div><div class="post_share"><div class="social-share" data-image="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/gh/overtrue/share.js@master/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/2021/01/21/Consul%E7%9A%84%E5%8F%8D%E7%86%B5/"><img class="prev-cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">Consul的反熵</div></div></a></div><div class="next-post pull-right"><a href="/2020/11/02/%E7%AC%AC%E4%BA%8C%E5%B1%8A83%E8%A1%8C%E4%BB%A3%E7%A0%81%E9%87%8D%E6%9E%84%E5%A4%A7%E8%B5%9B%E8%AE%B0%E5%BD%95/"><img class="next-cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">第二届83行代码重构大赛记录</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2021/01/21/Consul%E7%9A%84%E5%8F%8D%E7%86%B5/" title="Consul的反熵"><img class="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2021-01-21</div><div class="title">Consul的反熵</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="https://i.loli.net/2021/02/24/5O1day2nriDzjSu.png" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">Kyle Wong</div><div class="author-info__description">君子慎独，不欺暗室。<br>卑以自牧，含章可贞。<br>大丈夫立于天地之间，<br>当养天地浩然正气，<br>行光明磊落之事。<br>克己，慎独，守心，明性。</div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">10</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">2</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/herowk"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">Never Give Up!</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%BF%E7%94%A8%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0"><span class="toc-number">1.</span> <span class="toc-text">为什么使用服务发现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Consul%E5%86%85%E9%83%A8%E5%8E%9F%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text">Consul内部原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Consul%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="toc-number">3.</span> <span class="toc-text">Consul服务发现原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Consul%E5%AE%9E%E9%99%85%E4%BD%BF%E7%94%A8"><span class="toc-number">4.</span> <span class="toc-text">Consul实际使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E8%A3%85Docker"><span class="toc-number">4.1.</span> <span class="toc-text">安装Docker</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8Consul%E9%9B%86%E7%BE%A4"><span class="toc-number">4.2.</span> <span class="toc-text">启动Consul集群</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E6%B3%A8%E5%86%8C"><span class="toc-number">4.3.</span> <span class="toc-text">服务注册</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0"><span class="toc-number">4.4.</span> <span class="toc-text">服务发现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8A%82%E7%82%B9%E5%92%8C%E6%9C%8D%E5%8A%A1%E6%B3%A8%E9%94%80"><span class="toc-number">4.5.</span> <span class="toc-text">节点和服务注销</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Consul%E7%9A%84%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5"><span class="toc-number">5.</span> <span class="toc-text">Consul的健康检查</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Consul%E7%9A%84%E5%85%B6%E5%AE%83%E9%83%A8%E7%BD%B2%E6%9E%B6%E6%9E%84"><span class="toc-number">6.</span> <span class="toc-text">Consul的其它部署架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%8E%E8%AE%B0"><span class="toc-number">7.</span> <span class="toc-text">后记</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2021/01/21/Consul%E7%9A%84%E5%8F%8D%E7%86%B5/" title="Consul的反熵"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Consul的反熵"/></a><div class="content"><a class="title" href="/2021/01/21/Consul%E7%9A%84%E5%8F%8D%E7%86%B5/" title="Consul的反熵">Consul的反熵</a><time datetime="2021-01-21T02:42:53.000Z" title="发表于 2021-01-21 10:42:53">2021-01-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2021/01/21/%E4%BD%BF%E7%94%A8Consul%E5%81%9A%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0%E7%9A%84%E8%8B%A5%E5%B9%B2%E5%A7%BF%E5%8A%BF/" title="使用Consul做服务发现的若干姿势"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="使用Consul做服务发现的若干姿势"/></a><div class="content"><a class="title" href="/2021/01/21/%E4%BD%BF%E7%94%A8Consul%E5%81%9A%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0%E7%9A%84%E8%8B%A5%E5%B9%B2%E5%A7%BF%E5%8A%BF/" title="使用Consul做服务发现的若干姿势">使用Consul做服务发现的若干姿势</a><time datetime="2021-01-21T02:27:55.000Z" title="发表于 2021-01-21 10:27:55">2021-01-21</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2020/11/02/%E7%AC%AC%E4%BA%8C%E5%B1%8A83%E8%A1%8C%E4%BB%A3%E7%A0%81%E9%87%8D%E6%9E%84%E5%A4%A7%E8%B5%9B%E8%AE%B0%E5%BD%95/" title="第二届83行代码重构大赛记录"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="第二届83行代码重构大赛记录"/></a><div class="content"><a class="title" href="/2020/11/02/%E7%AC%AC%E4%BA%8C%E5%B1%8A83%E8%A1%8C%E4%BB%A3%E7%A0%81%E9%87%8D%E6%9E%84%E5%A4%A7%E8%B5%9B%E8%AE%B0%E5%BD%95/" title="第二届83行代码重构大赛记录">第二届83行代码重构大赛记录</a><time datetime="2020-11-02T05:56:15.000Z" title="发表于 2020-11-02 13:56:15">2020-11-02</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2020/10/18/thanksphoto/" title="thanksphoto"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="thanksphoto"/></a><div class="content"><a class="title" href="/2020/10/18/thanksphoto/" title="thanksphoto">thanksphoto</a><time datetime="2020-10-18T14:06:19.000Z" title="发表于 2020-10-18 22:06:19">2020-10-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2020/10/08/%E9%A2%86%E5%9F%9F%E9%A9%B1%E5%8A%A8%E8%AE%BE%E8%AE%A1%E5%AE%9E%E8%B7%B5%E6%89%8B%E5%86%8C-6-Bounded-Context-%E9%99%90%E7%95%8C%E4%B8%8A%E4%B8%8B%E6%96%87/" title="领域驱动设计实践手册(6. Bounded Context - 限界上下文)"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="领域驱动设计实践手册(6. Bounded Context - 限界上下文)"/></a><div class="content"><a class="title" href="/2020/10/08/%E9%A2%86%E5%9F%9F%E9%A9%B1%E5%8A%A8%E8%AE%BE%E8%AE%A1%E5%AE%9E%E8%B7%B5%E6%89%8B%E5%86%8C-6-Bounded-Context-%E9%99%90%E7%95%8C%E4%B8%8A%E4%B8%8B%E6%96%87/" title="领域驱动设计实践手册(6. Bounded Context - 限界上下文)">领域驱动设计实践手册(6. Bounded Context - 限界上下文)</a><time datetime="2020-10-08T08:51:58.000Z" title="发表于 2020-10-08 16:51:58">2020-10-08</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By Kyle Wong</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script><div class="js-pjax"><script>(() => {
+  const $mermaidWrap = document.querySelectorAll('#article-container .mermaid-wrap')
+  if ($mermaidWrap.length) {
+    window.runMermaid = () => {
+      window.loadMermaid = true
+      const theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default'
+
+      Array.from($mermaidWrap).forEach((item, index) => {
+        const mermaidSrc = item.firstElementChild
+        const mermaidThemeConfig = '%%{init:{ \'theme\':\'' + theme + '\'}}%%\n'
+        const mermaidID = 'mermaid-' + index
+        const mermaidDefinition = mermaidThemeConfig + mermaidSrc.textContent
+        mermaid.mermaidAPI.render(mermaidID, mermaidDefinition, (svgCode) => {
+          mermaidSrc.insertAdjacentHTML('afterend', svgCode)
+        })
+      })
+    }
+
+    const loadMermaid = () => {
+      window.loadMermaid ? runMermaid() : getScript('https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js').then(runMermaid)
+    }
+
+    window.pjax ? loadMermaid() : document.addEventListener('DOMContentLoaded', loadMermaid)
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
